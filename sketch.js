@@ -16,7 +16,7 @@ function draw() {
 rect(130,100,150,50);
  triangle(125,10,35,10,125,90);
   fill(p)
-  square(130,10,80);
+  circle(130,10,80);
   noStroke();
   quad(10,50,10,20,100,150,100,100);
   stroke(51); strokeWeight(10);
