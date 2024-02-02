@@ -19,7 +19,7 @@ function draw() {
   background(0);
 
   // Set the cursor to crosshairs: +
-  cursor(CROSS);
+  noCursor();
 
   // make stars pan
   for (let i = 0; i < stars.length; i++) {
@@ -134,7 +134,7 @@ function draw() {
   }
 }
 
-function keyPressed( ) {
+function keyPressed() {
   // Check if the key pressed is the space bar (keyCode 32)
   if (key === ' ') {
     // Create particles on space bar press
@@ -147,8 +147,8 @@ function keyPressed( ) {
     lines.push({
       startX: width,
       startY: height,
-      endX: mouseX,
-      endY: mouseY,
+      endX: mouseX - height / 2,
+      endY: mouseY - width / 2,
       timestamp: millis() // Store the timestamp when the line was created
     });
   }
