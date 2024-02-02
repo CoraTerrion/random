@@ -135,18 +135,22 @@ function draw() {
 }
 
 function mouseClicked() {
+  // Convert 2D mouse coordinates to 3D
+  let mouseX3D = mouseX - width / 2;
+  let mouseY3D = mouseY - height / 2;
+
   // Create particles on mouse click
   for (let i = 0; i < 25; i++) {
-    let particle = new Particle(mouseX-height/2, mouseY-width/2);
+    let particle = new Particle(mouseX3D, mouseY3D);
     particles.push(particle);
   }
 
   // Add a new line to the array with start and end coordinates
   lines.push({
-    startX: width,
-    startY: height,
-    endX: mouseX - height / 2,
-    endY: mouseY - width / 2,
+    startX: width / 2,
+    startY: height / 2,
+    endX: mouseX3D,
+    endY: mouseY3D,
     timestamp: millis() // Store the timestamp when the line was created
   });
 }
