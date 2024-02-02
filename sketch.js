@@ -134,26 +134,26 @@ function draw() {
   }
 }
 
-function mouseClicked() {
-  // Convert 2D mouse coordinates to 3D
-  let mouseX3D = mouseX - width / 2;
-  let mouseY3D = mouseY - height / 2;
+function keyPressed( ) {
+  // Check if the key pressed is the space bar (keyCode 32)
+  if (key === ' ') {
+    // Create particles on space bar press
+    for (let i = 0; i < 25; i++) {
+      let particle = new Particle(mouseX - height / 2, mouseY - width / 2);
+      particles.push(particle);
+    }
 
-  // Create particles on mouse click
-  for (let i = 0; i < 25; i++) {
-    let particle = new Particle(mouseX3D, mouseY3D);
-    particles.push(particle);
+    // Add a new line to the array with start and end coordinates
+    lines.push({
+      startX: width,
+      startY: height,
+      endX: mouseX - height / 2,
+      endY: mouseY - width / 2,
+      timestamp: millis() // Store the timestamp when the line was created
+    });
   }
-
-  // Add a new line to the array with start and end coordinates
-  lines.push({
-    startX: width / 2,
-    startY: height / 2,
-    endX: mouseX3D,
-    endY: mouseY3D,
-    timestamp: millis() // Store the timestamp when the line was created
-  });
 }
+
 
 class Particle {
   constructor(x, y) {
