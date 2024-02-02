@@ -147,8 +147,8 @@ function keyPressed( ) {
     lines.push({
       startX: width,
       startY: height,
-      endX: mouseX - height / 2,
-      endY: mouseY - width / 2,
+      endX: mouseX,
+      endY: mouseY,
       timestamp: millis() // Store the timestamp when the line was created
     });
   }
