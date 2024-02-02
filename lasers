@@ -1,0 +1,94 @@
+let lines = [];
+let particles = [];
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+}
+
+function draw() {
+  background(0); // Set the background color to black
+
+  // Draw the laser lines
+  for (let i = 0; i < lines.length; i++) {
+    let lineData = lines[i];
+    let alpha = map(millis() - lineData.timestamp, 0, 500, 255, 0); // Faster fading
+    let lineColor = color(255, 0, 0, alpha); // White color with alpha based on fading
+    let borderColor = color(255, 255, 255, alpha); // Red color with alpha based on fading
+    strokeWeight(7); // Stroke weight for the white line
+    stroke(lineColor);
+    let directionX = mouseX - lineData.startX;
+    let directionY = mouseY - lineData.startY;
+    let magnitude = sqrt(directionX * directionX + directionY * directionY);
+    directionX /= magnitude;
+    directionY /= magnitude;
+    let shortenedStartX = lineData.startX + directionX * map(millis() - lineData.timestamp, 0, 500, 0, magnitude); // Faster translation
+    let shortenedStartY = lineData.startY + directionY * map(millis() - lineData.timestamp, 0, 500, 0, magnitude); // Faster translation
+    line(shortenedStartX, shortenedStartY, lineData.endX, lineData.endY);
+
+    strokeWeight(3); // Stroke weight for the red border
+    stroke(borderColor);
+    line(shortenedStartX, shortenedStartY, lineData.endX, lineData.endY);
+  }
+
+  // Update and display each particle
+  for (let i = particles.length - 1; i >= 0; i--) {
+    particles[i].update();
+    particles[i].display();
+    if (particles[i].isDead()) {
+      particles.splice(i, 1); // Remove dead particles
+    }
+  }
+}
+
+function mouseClicked() {
+  // Create particles on mouse click
+  for (let i = 0; i < 25; i++) {
+    let particle = new Particle(mouseX, mouseY);
+    particles.push(particle);
+  }
+
+  // Add a new line to the array with start and end coordinates
+  lines.push({
+    startX: width / 2,
+    startY: height,
+    endX: mouseX,
+    endY: mouseY,
+    timestamp: millis() // Store the timestamp when the line was created
+  });
+}
+
+class Particle {
+  constructor(x, y) {
+    this.position = createVector(x, y);
+    this.velocity = createVector(random(-5, 5), random(-5, 5));
+    this.acceleration = createVector(0, 0.05); // Gravity-like acceleration
+    this.size = random(5, 15);
+    this.lifespan = 255; // Initial lifespan
+  }
+
+  update() {
+    // Update velocity and position
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+
+    // Decrease lifespan
+    this.lifespan -= 2;
+
+    // Gradually reduce acceleration to simulate slowing down
+    this.acceleration.mult(0.95);
+  }
+
+  display() {
+    // Draw particle with independent stroke weight
+    stroke(255, 150, 150, this.lifespan); // White color with alpha based on lifespan
+    strokeWeight(3); // Independent stroke weight for particles
+    fill(255, this.lifespan); // White color with alpha based on lifespan
+    ellipse(this.position.x, this.position.y, this.size, this.size);
+  }
+
+  isDead() {
+    // Check if the particle's lifespan has reached zero
+    return this.lifespan <= 0;
+  }
+}
+
