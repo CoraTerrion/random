@@ -1,204 +1,80 @@
-let lines = [];
-let particles = [];
-let stars = [];
-let shootingStars = [];
-let angleX = 0;
-let angleY = 0;
+let words = ["Proscenium 1995", "Harmonic Grid LX 1978", "Sumer #1, The Watcher 1996", "Untitled 788, 790, 795, 796, 799, 800, 804 1993-1995", "Rebus 1997", "Hall of Birds 1995-1996", "Rhonda Lavonda Yolonda Chiffonda 1995", "Rise 1993", "Cleveland Clouds 1994", "Twelve Disks Over Sixteen Hollowed Halves and Four Quarters 2013", "Monument of Monuments 1996", "Dervish 9 2004", "Atrabiliarios (Defiant) 1992-1993", "Bang 1994", "Trophy Member 2003-2009", "Untitled (Kneeling Woman with Mask) 1998", "Climbing Rosebush 2005", "Jo Anne Robinson (arrest 7042) 2008", "J.W. Bonner (arrest 7057) 2008", "Rev. M. L. King Jr. (arrest 7089) 2008", "Audrey Belle;Langford (arrest 7080) 2008", "Rosa Parks (arrest 7053) 2008","Willie James Kemp (arrest 7104) 2008", "L.R. Bennett (arres 7022) 2008","Ralph D. Abernathy (arrest 7018) 2008", "Sustenance 79 2003", "DOUBLE DOOR 2000", "TRANSFER 1998", "LEE HARVEY OSWALD AFTER SIGMAR POLKE 2001", "supermodel 1994"];
+let transparencies = []; // Array to store transparency levels for each word
+let positions = []; // Array to store positions for each word
+let textWidths = []; // Array to store widths for each word
+let textHeights = []; // Array to store heights for each word
 
 function setup() {
-  createCanvas(windowWidth, windowHeight, WEBGL);
-  noStroke();
+  createCanvas(windowWidth, windowHeight);
+  textFont(customFont);
+  textSize(18);
+  textAlign(CENTER, CENTER);
 
-  // generate stars
-  for (let i = 0; i < 200; i++) {
-    stars.push(createVector(random(-width / 2, width / 2), random(-height / 2, height / 2)));
+  // Calculate non-overlapping positions for each word
+  for (let i = 0; i < words.length; i++) {
+    let word = words[i];
+    let wordWidth = textWidth(word);
+    let wordHeight = textAscent() + textDescent();
+    
+    let x = random(wordWidth / 2, width - wordWidth / 2);
+    let y = random(wordHeight / 2, height - wordHeight / 2);
+    
+    // Check for overlap with existing words
+    let overlapping = false;
+    for (let j = 0; j < positions.length; j++) {
+      let otherX = positions[j].x;
+      let otherY = positions[j].y;
+      let otherWordWidth = textWidths[j];
+      let otherWordHeight = textHeights[j];
+      
+      let distance = dist(x, y, otherX, otherY);
+      if (distance < wordWidth/10 + otherWordWidth/10 && distance < wordHeight/10 + otherWordHeight/10) {
+        overlapping = true;
+        break;
+      }
+    }
+    
+    // If overlapping, recalculate position
+    if (overlapping) {
+      i--;
+    } else {
+      positions.push(createVector(x, y));
+      textWidths.push(wordWidth);
+      textHeights.push(wordHeight);
+      transparencies.push(255);
+    }
+  }
+}
+
+function preload() {
+  // Load the custom font
+  customFont = loadFont('neon.ttf');
+}
+
+function keyPressed() {
+  if (key === ' ') {
+    let fs = fullscreen();
+    fullscreen(!fs);
   }
 }
 
 function draw() {
   background(0);
+  frameRate(30);
 
-  // Set the cursor to crosshairs: +
-  noCursor();
-
-  // make stars pan
-  for (let i = 0; i < stars.length; i++) {
-    stars[i].x += 0.08; // Adjust pan speed
-    if (stars[i].x > width / 2) {
-      stars[i].x = -width / 2;
-      stars[i].y = random(-height / 2, height / 2);
-    }
-    fill(255, random(10, 255));
-    ellipse(stars[i].x, stars[i].y, 2, 2);
-  }
-
-  // Twinkling
-  for (let i = 0; i < stars.length; i++) {
-    fill(255, random(10, 255)); // alpha controls twinkle
-    ellipse(stars[i].x, stars[i].y, 2, 2);
-    if (random() > 0.99) {
+  // Display each word with its respective transparency and position
+  for (let i = 0; i < words.length; i++) {
+    let x = positions[i].x;
+    let y = positions[i].y;
+    fill(255, 255, 255, transparencies[i]);
+    strokeWeight(.3);
+    stroke(250, 150, 100, transparencies[i]);
+    text(words[i], x, y);
+    
+    // Update transparency levels randomly
+    if (random(25) < 1) { // Adjust this value to control the frequency of transparency changes
+      let delta = random(-37, 25); // Random change in transparency
+      transparencies[i] = constrain(transparencies[i] + delta, 0, 255); // Ensure transparency stays within valid range
     }
   }
-
-  // Shooting stars
-  for (let i = 0; i < shootingStars.length; i++) {
-    let star = shootingStars[i];
-    fill(255, star.alpha);
-    ellipse(star.x, star.y, 4, 4);
-
-    // shooting star position
-    star.x += star.speedX;
-    star.y += star.speedY;
-
-    // remove shooting stars
-    star.alpha -= 2;
-    if (star.alpha <= 0 || star.x < -width / 2 || star.x > width / 2 || star.y < -height / 2 || star.y > height / 2) {
-      shootingStars.splice(i, 1);
-    }
-  }
-
-  // Generate shooting stars
-  if (random() > 0.995) {
-    let startX = random(-width / 2, width / 2);
-    let startY = random(-height / 4, height / 4);
-    let speedX = random(2, 5);
-    let speedY = random(-1, 1);
-    let alpha = 255;
-    shootingStars.push({ x: startX, y: startY, speedX, speedY, alpha });
-  }
-
-  // ambient light
-  ambientLight(10);
-
-  // directional light
-  directionalLight(25, 255, 255, 0, 0, -1);
-
-  for (let i = 0; i < 7; i++) {
-    push();
-    rotateX(angleX);
-    rotateY(angleY);
-
-    // i wrote like 150+ lines to get the cube effect, and asked chatgpt to shorten it, this is what i got. i vaguely understand it but i couldnt recreate it
-    let translationVector;
-    if (i === 0) translationVector = createVector(0, -150, 0);
-    else if (i === 1) translationVector = createVector(-150, 0, 0);
-    else if (i === 2) translationVector = createVector(0, 0, -150);
-    else if (i === 3) translationVector = createVector(150, 0, 0);
-    else if (i === 4) translationVector = createVector(0, 150, 0);
-    else if (i === 5) translationVector = createVector(0, 0, 150);
-    else translationVector = createVector(0, 0, 0);
-
-    translate(translationVector);
-
-    drawCube();
-
-    // rotation angle
-    angleX += 0.002;
-    angleY += 0.002;
-    pop();
-  }
-
-  //*anything related to the laser is completely written by chatgpt, i had little to nothing to do with it except for the idea and the troubleshooting, i dont think there is any code written by me beyond this point but i used chatgpt to integrate a few different sketches together so im not 100% sure*
-  
-  // Draw the laser lines
-  for (let i = 0; i < lines.length; i++) {
-    let lineData = lines[i];
-    let alpha = map(millis() - lineData.timestamp, 0, 500, 255, 0); 
-   //laser inside color
-    let lineColor = color(255, 0, 0, alpha); 
-    let borderColor = color(255, 255, 255, alpha); // Red color with alpha based on fading
-    // Stroke weight for the white line
-    strokeWeight(7); 
-    stroke(lineColor);
-    let directionX = mouseX - lineData.startX;
-    let directionY = mouseY - lineData.startY;
-    let magnitude = sqrt(directionX * directionX + directionY * directionY);
-    directionX /= magnitude;
-    directionY /= magnitude;
-    let shortenedStartX = lineData.startX + directionX * map(millis() - lineData.timestamp, 0, 500, 0, magnitude); // Faster translation
-    let shortenedStartY = lineData.startY + directionY * map(millis() - lineData.timestamp, 0, 500, 0, magnitude); // Faster translation
-    line(shortenedStartX, shortenedStartY, lineData.endX, lineData.endY);
-
-    strokeWeight(3); // Stroke weight for the red border
-    stroke(borderColor);
-    line(shortenedStartX, shortenedStartY, lineData.endX, lineData.endY);
-  }
-
-  // Update and display each particle
-  for (let i = particles.length - 1; i >= 0; i--) {
-    particles[i].update();
-    particles[i].display();
-    if (particles[i].isDead()) {
-      particles.splice(i, 1); // Remove dead particles
-    }
-  }
-}
-
-function keyPressed() {
-  // Check if the key pressed is the space bar (keyCode 32)
-  if (key === ' ') {
-    // Create particles on space bar press
-    for (let i = 0; i < 25; i++) {
-      let particle = new Particle(mouseX - height / 2, mouseY - width / 2);
-      particles.push(particle);
-    }
-
-    // Add a new line to the array with start and end coordinates
-    lines.push({
-      startX: width,
-      startY: height,
-      endX: mouseX - height / 2,
-      endY: mouseY - width / 2,
-      timestamp: millis() // Store the timestamp when the line was created
-    });
-  }
-}
-
-
-class Particle {
-  constructor(x, y) {
-    this.position = createVector(x, y);
-    this.velocity = createVector(random(-5, 5), random(-5, 5));
-    this.acceleration = createVector(0, 0.05); // Gravity-like acceleration
-    this.size = random(5, 15);
-    this.lifespan = 255; // Initial lifespan
-  }
-
-  update() {
-    // Update velocity and position
-    this.velocity.add(this.acceleration);
-    this.position.add(this.velocity);
-
-    // Decrease lifespan
-    this.lifespan -= 2;
-
-    // Gradually reduce acceleration to simulate slowing down
-    this.acceleration.mult(0.95);
-  }
-
-  display() {
-    // Draw particle with independent stroke weight
-    stroke(255, 150, 150, this.lifespan); // White color with alpha based on lifespan
-    strokeWeight(3); // Independent stroke weight for particles
-    fill(255, this.lifespan); // White color with alpha based on lifespan
-    ellipse(this.position.x, this.position.y, this.size, this.size);
-  }
-
-  isDead() {
-    // Check if the particle's lifespan has reached zero
-    return this.lifespan <= 0;
-  }
-}
-
-function drawCube() {
-  push();
-  stroke(255);
-  strokeWeight(2);
-
-  // Add point light
-  pointLight(255, 255, 255, 0, 0, 0);
-
-  fill(255, 150, 150);
-  box(50);
-  pop();
 }
