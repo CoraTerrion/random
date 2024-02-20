@@ -48,7 +48,7 @@ function setup() {
 
 function preload() {
   // Load the custom font
-  customFont = loadFont('neon.ttf');
+  customFont = loadFont('NeonSans.ttf');
 }
 
 function keyPressed() {
